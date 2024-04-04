@@ -1,15 +1,16 @@
 const express = require('express');
 const app = express();
 const port = 3000;
-const http=require('http');
-const server=http.createServer(app);
-const {Server}=require('socket.io');
-const io=new Server(server);
-
+const http = require('http');
+const server = http.createServer(app);
+const { Server } = require('socket.io');
+const io = new Server(server);
 
 const path = require('path');
+const cors = require('cors'); // Import cors middleware
 
-
+// Use cors middleware
+app.use(cors());
 
 app.use(express.static(path.join(__dirname, '../frontend')));
 
@@ -24,9 +25,9 @@ const projectiles = {};
 
 const enemies = [];
 
-const speed=2.5;
+const speed = 2.5;
 
-let projectileId=0;
+let projectileId = 0;
 
 class Enemy {
     constructor(x, y, radius, color, velocity) {
@@ -89,7 +90,7 @@ io.on('connection', (socket) => {
 
     addPlayer(socket.id);
 
-    socket.on('restartGame',()=>{
+    socket.on('restartGame', () => {
         addPlayer(socket.id);
     })
 
@@ -130,11 +131,11 @@ io.on('connection', (socket) => {
     });
 
 
-    socket.on('shoot', ({x,y,angle})=>{
+    socket.on('shoot', ({ x, y, angle }) => {
 
-        const velocity={
-            x:Math.cos(angle)*speed,
-            y:Math.sin(angle)*speed
+        const velocity = {
+            x: Math.cos(angle) * speed,
+            y: Math.sin(angle) * speed
         };
 
         const projectile = {
@@ -171,7 +172,7 @@ io.on('connection', (socket) => {
                 const radius = Math.random() * (30 - 4) + 4;
                 let x;
                 let y;
-        
+
                 if (Math.random() < 0.5) {
                     x = Math.random() < 0.5 ? 0 - radius : canvasWidth + radius;
                     y = Math.random() * canvasHeight;
@@ -179,24 +180,24 @@ io.on('connection', (socket) => {
                     x = Math.random() * canvasWidth;
                     y = Math.random() < 0.5 ? 0 - radius : canvasHeight + radius;
                 }
-        
+
                 const color = `hsl(${Math.random() * 360}, 50%, 50%)`;
-        
+
                 const isHomingEnemy = Math.random() < 0.2;
-        
+
                 // Use the player positions as the target for homing enemies
                 const targetPlayer = getRandomPlayer(); // Implement a function to get a random player
-    
+
                 const angle = Math.atan2(targetPlayer.y - y, targetPlayer.x - x);
                 const velocity = {
                     x: Math.cos(angle),
                     y: Math.sin(angle)
                 };
-        
+
                 const enemy = isHomingEnemy
                     ? new HomingEnemy(x, y, radius, color, velocity, targetPlayer)
                     : new Enemy(x, y, radius, color, velocity);
-        
+
                 enemies.push(enemy);
                 io.emit('spawnEnemy', {
                     x: enemy.x,
@@ -209,28 +210,27 @@ io.on('connection', (socket) => {
             }
         }, 10000);
     }
-    
+
 
     function getRandomPlayer() {
         const playerIds = Object.keys(players);
         const randomPlayerId = playerIds[Math.floor(Math.random() * playerIds.length)];
         return players[randomPlayerId];
     }
-    
 
 
 
     setInterval(() => {
-        for(const id in projectiles){
-            const projectile=projectiles[idf];
-            projectile.x+=projectile.velocity.x;
-            projectile.y+=projectile.velocity.y;
+        for (const id in projectiles) {
+            const projectile = projectiles[id];
+            projectile.x += projectile.velocity.x;
+            projectile.y += projectile.velocity.y;
         }
 
         io.emit('updateProjectiles', projectiles);
 
         io.emit('updatePlayers', players);
-    }, 1000/60); 
+    }, 1000 / 60);
 });
 
 
@@ -252,8 +252,6 @@ process.on('uncaughtException', (err) => {
     });
 });
 
-
 server.listen(port, () => {
     console.log(`Example app listening at${port}`);
-    }
-);
+});
