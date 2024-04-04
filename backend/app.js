@@ -222,7 +222,7 @@ io.on('connection', (socket) => {
 
     setInterval(() => {
         for(const id in projectiles){
-            const projectile=projectiles[id];
+            const projectile=projectiles[idf];
             projectile.x+=projectile.velocity.x;
             projectile.y+=projectile.velocity.y;
         }

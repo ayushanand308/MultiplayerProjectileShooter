@@ -796,43 +796,6 @@ function startGame() {
     populateBackground();
     spawnEnemies();
     animate();
-
-    // Check if there are active players
-    if (activePlayers.length === 0) {
-        // Start the game for the initiating player alone
-        // Implement logic to start game for a single player
-        console.log("Starting game for single player...");
-    } else {
-        // Initiate the 15-second timer
-        setTimeout(() => {
-            // Select a random player
-            let randomIndex = Math.floor(Math.random() * activePlayers.length);
-            let selectedPlayer = activePlayers[randomIndex];
-
-            // Check if a player was selected
-            if (selectedPlayer) {
-                // Send a request to the selected player
-                selectedPlayer.socket.emit('gameRequest', { from: 'server' });
-
-                // Listen for response from the selected player
-                selectedPlayer.socket.on('gameResponse', (response) => {
-                    if (response.accepted) {
-                        // Start the game for both players
-                        // Implement logic to start the game for both players
-                        console.log("Starting game for both players...");
-                    } else {
-                        // Start the game for the initiating player alone
-                        // Implement logic to start the game for a single player
-                        console.log("Starting game for single player...");
-                    }
-                });
-            } else {
-                // Start the game for the initiating player alone
-                // Implement logic to start the game for a single player
-                console.log("Starting game for single player...");
-            }
-        }, 15000); // 15 seconds
-    }
 }
 
 
