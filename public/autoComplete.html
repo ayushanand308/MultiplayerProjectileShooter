@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Search Bar with Word Suggestions and Error Detection</title>
+  <style>
+    .suggestions {
+      list-style-type: none;
+      padding: 0;
+      margin: 0;
+      border: 1px solid #ccc;
+      background-color: #f9f9f9;
+      max-height: 180px; /* Adjust as needed */
+      overflow-y: auto; /* Add scrollbar */
+      border-radius: 4px;
+      width: 15%;
+    }
+
+    .suggestions li {
+      padding: 8px 16px;
+      cursor: pointer;
+      position: relative;
+    }
+
+    .suggestions li.active {
+      background-color: #e9e9e9;
+    }
+
+    .highlight {
+      font-weight: bold;
+    }
+
+    .error {
+      border-bottom: 2px solid red; /* Underline with red border for errors */
+    }
+
+    .suggestion-tooltip {
+      position: absolute;
+      top: 100%;
+      left: 50%;
+      transform: translateX(-50%);
+      background-color: #fff;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      padding: 8px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      z-index: 1;
+      display: none;
+    }
+
+    .suggestions li:hover .suggestion-tooltip {
+      display: block;
+    }
+
+    .suggestion-description {
+      font-size: 0.8rem;
+      color: #666;
+    }
+  </style>
+</head>
+<body>
+  <input type="text" id="searchInput" placeholder="Search...">
+  <ul class="suggestions" id="suggestionsList"></ul>
+
+  <script src="https://cdn.jsdelivr.net/npm/fuse.js"></script>
+
+  <script>
+    const dummyData = [
+        'apple',
+        'apricot',
+        'almond',
+        'artichoke',
+        'asparagus',
+        'avocado',
+        'banana',
+        'orange',
+        'pineapple',
+        'strawberry',
+        'kiwi',
+        'mango',
+        'grape',
+        'blueberry',
+        'raspberry',
+        'banana',
+        'broccoli',
+        'apricot',
+        'avocado',
+        'ackee',
+        'acerola',
+        'appleberry',
+        'apricot-plum',
+        'apricot',
+        'araza',
+        'atemoia',
+        'aubergine',
+        'avocado',
+        'avocado-berry'
+    ];
+
+    const suggestionDescriptions = {
+      'apple': {
+        description: 'A fruit of red colour',
+        usage: 'Can be eaten as a sweet fruit.'
+      },
+      'banana': {
+        description: 'A fruit of yellow color',
+        usage: 'Commonly used in desserts and smoothies.'
+      },
+      'orange': {
+        description: 'A fruit with a tangy taste',
+        usage: 'Rich in Vitamin C.'
+      },
+      'pineapple': {
+        description: 'A tropical fruit with a spiky skin',
+        usage: 'Used in fruit salads, desserts, and as a pizza topping.'
+      },
+      'strawberry': {
+        description: 'A small, sweet fruit with a red color',
+        usage: 'Commonly used in desserts, jams, and beverages.'
+      },
+      // Add more suggestion descriptions as needed
+    };
+
+
+    const searchInput = document.getElementById('searchInput');
+    const suggestionsList = document.getElementById('suggestionsList');
+    let activeIndex = -1;
+
+    const fuse = new Fuse(dummyData, {
+      includeScore: true,
+      threshold: 0.3,
+      keys: ['name']
+    });
+
+    searchInput.addEventListener('input', () => {
+      const searchValue = searchInput.value.toLowerCase();
+      const results = fuse.search(searchValue).map(result => result.item);
+
+      renderSuggestions(results, searchValue); // Display all suggestions matching the search term
+
+      checkSyntax(searchValue); // Check syntax errors
+      
+    });
+
+    searchInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Tab') {
+        e.preventDefault();
+        activeIndex = (activeIndex + 1) % suggestionsList.children.length;
+        updateActiveSuggestion();
+      } else if (e.key === 'Enter') {
+        if (activeIndex !== -1) {
+          selectSuggestion(activeIndex);
+        }
+      }
+    });
+
+    function renderSuggestions(suggestions, searchValue) {
+      suggestionsList.innerHTML = '';
+      activeIndex = -1;
+
+      if (suggestions.length === 0) {
+        return;
+      }
+
+      suggestions.forEach((suggestion, index) => {
+        const li = document.createElement('li');
+        const matchingPart = suggestion.substr(0, searchValue.length);
+        const remainingPart = suggestion.substr(searchValue.length);
+        li.innerHTML = `<span class="highlight">${matchingPart}</span>${remainingPart}`;
+        const tooltip = document.createElement('div');
+        tooltip.classList.add('suggestion-tooltip');
+        const description = suggestionDescriptions[suggestion];
+        if (description) {
+          tooltip.innerHTML = `
+            <strong>${suggestion}:</strong><br>
+            <em>Description:</em> ${description.description}<br>
+            <em>Usage:</em> ${description.usage}
+          `;
+        }
+        li.appendChild(tooltip);
+        suggestionsList.appendChild(li);
+      });
+    }
+
+    function updateActiveSuggestion() {
+      for (let i = 0; i < suggestionsList.children.length; i++) {
+        const suggestion = suggestionsList.children[i];
+        if (i === activeIndex) {
+          suggestion.classList.add('active');
+          searchInput.value = suggestion.innerText.split(':')[0].trim(); // Update input value here (optional)
+          // Scroll to the position of the active suggestion
+          suggestionsList.scrollTop = suggestion.offsetTop - suggestionsList.clientHeight / 2 + suggestion.clientHeight / 2;
+        } else {
+          suggestion.classList.remove('active');
+        }
+      }
+    }
+
+
+    function selectSuggestion(index) {
+        const selectedSuggestion = suggestionsList.children[index];
+        if (selectedSuggestion) {
+            
+            const wordLength=selectedSuggestion.innerText.split(':')[0].trim().length
+            const suggestionText = selectedSuggestion.innerText.split(':')[0].trim().slice(0, -wordLength/2);
+            console.log(wordLength)// Extract only the word portion
+            searchInput.value = suggestionText;
+            suggestionsList.innerHTML = '';
+        }
+    }
+
+
+    // Add event listeners for mouse hover and click on suggestions
+    suggestionsList.addEventListener('mouseover', (e) => {
+      if (e.target.tagName === 'LI') {
+        e.target.classList.add('active');
+        activeIndex = Array.from(suggestionsList.children).indexOf(e.target);
+      }
+    });
+
+    suggestionsList.addEventListener('mouseout', (e) => {
+      if (e.target.tagName === 'LI') {
+        e.target.classList.remove('active');
+        activeIndex = -1;
+      }
+    });
+
+    suggestionsList.addEventListener('click', (e) => {
+      if (e.target.tagName === 'LI') {
+        selectSuggestion(Array.from(suggestionsList.children).indexOf(e.target));
+      }
+    });
+
+    // Hide dropdown menu when clicking outside of it
+    document.body.addEventListener('click', (e) => {
+      if (!suggestionsList.contains(e.target) && e.target !== searchInput) {
+        suggestionsList.innerHTML = '';
+      }
+    });
+
+    function checkSyntax(searchValue) {
+      const inputValue = searchInput.value;
+      if (!dummyData.includes(inputValue.toLowerCase())) {
+        // Error detected, underline the incorrect portion of the input text
+        searchInput.classList.add('error');
+      } else {
+        // No error, remove any existing error styling
+        searchInput.classList.remove('error');
+      }
+    }
+
+    
+
+    
+  </script>
+</body>
+</html>
