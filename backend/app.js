@@ -253,5 +253,5 @@ process.on('uncaughtException', (err) => {
 });
 
 server.listen(port, () => {
-    console.log(`Example app listening at${port}`);
+    console.log(`Example app listening at ${port}`);
 });
