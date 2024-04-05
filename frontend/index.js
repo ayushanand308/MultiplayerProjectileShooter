@@ -91,7 +91,6 @@ socket.on('updatePlayers', (backendPlayers) => {
             // Create a new player only if it doesn't exist
             players[id] = new Player(backendPlayer.x, backendPlayer.y, backendPlayer.size, backendPlayer.color);
         } else {
-            console.log("players position updated")
             // Update the existing player's position directly
             players[id].x = backendPlayer.x;
             players[id].y = backendPlayer.y;
@@ -690,11 +689,9 @@ addEventListener('mousemove', (event) => {
 
         // Restrict movement to four directions (left, right, up, down)
         if (distance > movementSpeed) {
-            console.log("players position updated 2")
             players[socket.id].x += Math.cos(angle) * movementSpeed;
             players[socket.id].y += Math.sin(angle) * movementSpeed;
         } else {
-            console.log("players position updated 3")
             // Snap to the mouse position if the distance is small
             players[socket.id].x = event.clientX;
             players[socket.id].y = event.clientY;
