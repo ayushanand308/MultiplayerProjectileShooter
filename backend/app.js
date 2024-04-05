@@ -85,8 +85,8 @@ class HomingEnemy extends Enemy {
 
 
 io.on('connection', (socket) => {
-    console.log('A USER HAS CONNECTED');
-    //to add players to players object
+/*     console.log('A USER HAS CONNECTED');
+ */    //to add players to players object
 
     addPlayer(socket.id);
 
@@ -108,12 +108,12 @@ io.on('connection', (socket) => {
     }
 
 
-    console.log(players);
-
+/*     console.log(players);
+ */
     //on disconnect remove player from players object
     socket.on('disconnect', () => {
-        console.log(`user id ${socket.id} disconnected`);
-        delete players[socket.id];
+/*         console.log(`user id ${socket.id} disconnected`);
+ */        delete players[socket.id];
         io.emit('updatePlayers', players);
     });
 
@@ -159,8 +159,8 @@ io.on('connection', (socket) => {
 
 
     socket.on('canvasSize', (canvasData) => {
-        console.log('Received canvas dimensions from client:', canvasData);
-
+/*         console.log('Received canvas dimensions from client:', canvasData);
+ */
         // Pass canvas dimensions to the spawnEnemies function
         spawnEnemies(canvasData.width, canvasData.height);
     });
